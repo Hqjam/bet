@@ -1,46 +1,25 @@
-import express from 'express';
-import userModel from "./models/user.model.js";
+import dotenv from "dotenv";
+dotenv.config();
+
+import express from "express";
+import cookieParser from "cookie-parser";
+
+import authrouter from './routes/auth.js';
+import profileRouter from './routes/profile.js';
+
+import requestRouter from './routes/request.js';
+import feedRouter from './routes/feed.js';
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 
-app.post("/signup", async (req, res) => {
-  //console.log("req.body:", req.body);
-  const userData = req.body;
-  try {
-    const user = new userModel(userData);
-    await user.save();
-    res.status(201).send("User signed up successfully");
-    console.log("➡️  /signup route was hit");
-  } catch (err) {
-    res.status(500).send(`Error signing up user: ${err.message}`);
-  }
+app.use('/', profileRouter); 
+app.use('/', authrouter); 
+app.use('/', requestRouter); 
+app.use('/', feedRouter); 
 
-});
+
+
 
 export default app;
-
-
-
-
-
-
-
-// const userData = {
-//     firstName: "Prakhar",
-//     lastName: "Singh ",
-//     email: "prakhar321123@gmail.com",
-//     password: "prakhar1234",
-//     age: 22,
-//     gender: "male"
-//   };
-
-//   try {
-//     const user = new userModel(userData);
-//     await user.save();
-//     res.status(201).send("User signed up successfully");
-//     console.log("➡️  /signup route was hit");
-
-//   } catch (err) {
-//     res.status(500).send(`Error signing up user: ${err.message}`);
-//   }
