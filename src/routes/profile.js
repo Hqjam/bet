@@ -2,60 +2,53 @@ import express from 'express';
 import userModel from '../models/user.model.js';
 import { authenticateUser } from '../middlewares/Auth.js';
 import { validateProfileUpdateInput } from '../utils/validation.js';
+import upload           from '../middlewares/upload.single.js';   // NEW
+import { uploadImage }  from '../utils/cloudinary.js';             // NEW
 
 const profileRouter = express.Router();
 
+/* existing GET route – NO CHANGE */
 profileRouter.get("/profile/view", authenticateUser, async (req, res) => {
   try {
     const user = await userModel.findById(req.user.userId).select("-password");
     if (!user) return res.status(404).send("User not found");
-
     res.status(200).json(user);
-    console.log("➡️  /profile/view route was hit");
   } catch (err) {
     res.status(500).send(`Error fetching profile: ${err.message}`);
   }
 });
 
-profileRouter.put("/profile/edit", authenticateUser, async (req, res) => {
-  const { firstName, lastName, age, about, profilePicture } = req.body;
+/* single PATCH route that also handles file upload */
+profileRouter.patch(
+  "/profile/edit",
+  authenticateUser,
+  upload,
+  async (req, res) => {
+    try {
+      const updates = {};
 
-  try {
-    const updatedUser = await userModel.findByIdAndUpdate(
-      req.user.userId,
-      { firstName, lastName, age, about, profilePicture },
-      { new: true, runValidators: true }
-    ).select("-password");
+      // only add keys that actually came in
+      if (req.body.firstName) updates.firstName = req.body.firstName;
+      if (req.body.lastName)  updates.lastName  = req.body.lastName;
+      if (req.body.age !== undefined) updates.age = Number(req.body.age);
+      if (req.body.about) updates.about = req.body.about;
 
-    if (!updatedUser) return res.status(404).send("User not found");
+      // new picture?
+      if (req.file) {
+        updates.profilePicture = await uploadImage(req.file.path);
+      }
 
-    res.status(200).json(updatedUser);
-    console.log("➡️  /profile/edit route was hit");
-  } catch (err) {
-    res.status(500).send(`Error updating profile: ${err.message}`);
+      const updatedUser = await userModel.findByIdAndUpdate(
+        req.user.userId,
+        updates,
+        { new: true, runValidators: true }
+      ).select("-password");
+
+      res.status(200).json(updatedUser);
+    } catch (err) {
+      res.status(500).send("Profile update failed: " + err.message);
+    }
   }
-});
-profileRouter.patch("/profile/edit", authenticateUser, async (req, res) => {
-  const errorOccurred = validateProfileUpdateInput(req, res);
-  if (errorOccurred) return;
-
-  const { firstName, lastName, age, about, profilePicture } = req.body;
-
-  try {
-    const updatedUser = await userModel.findByIdAndUpdate(
-      req.user.userId,
-      { firstName, lastName, age, about, profilePicture },
-      { new: true, runValidators: true }
-    ).select("-password");
-
-    if (!updatedUser) return res.status(404).send("User not found");
-
-    res.status(200).json(updatedUser);
-    console.log("➡️  /profile/edit route was hit");
-  } catch (err) {
-    res.status(500).send(`Error updating profile: ${err.message}`);
-  }
-});
+);
 
 export default profileRouter;
-

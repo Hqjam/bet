@@ -2,24 +2,28 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
+const app = express(); // ✅ Move this to the top
+
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
-import authrouter from './routes/auth.js';
-import profileRouter from './routes/profile.js';
-
-import requestRouter from './routes/request.js';
-import feedRouter from './routes/feed.js';
-
-const app = express();
+// Middlewares
+app.use(cors({
+  origin: "http://localhost:5173", // Frontend URL
+  credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 
-app.use('/', profileRouter); 
-app.use('/', authrouter); 
-app.use('/', requestRouter); 
-app.use('/', feedRouter); 
+// Routes
+import authrouter from './routes/auth.js';
+import profileRouter from './routes/profile.js';
+import requestRouter from './routes/request.js';
+import feedRouter from './routes/feed.js';
 
-
-
+app.use('/', profileRouter);
+app.use('/', authrouter);
+app.use('/', requestRouter);
+app.use('/', feedRouter);
 
 export default app;

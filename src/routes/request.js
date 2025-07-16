@@ -128,6 +128,28 @@ requestRouter.delete('/request/cancel/:toUserId', authenticateUser, async (req, 
     return res.status(500).send(`Error cancelling request: ${err.message}`);
   }
 });
+// GET /matches  → list accepted connections
+requestRouter.get('/matches', authenticateUser, async (req, res) => {
+  try {
+    const matches = await connectionRequestModel
+      .find({
+        status: 'accept',
+        $or: [{ sender: req.user.userId }, { receiver: req.user.userId }]
+      })
+      .populate('sender', 'firstName lastName profilePicture')
+      .populate('receiver', 'firstName lastName profilePicture');
+
+    // map to only the other user
+    const cleaned = matches.map(m => {
+      const other = m.sender._id.toString() === req.user.userId ? m.receiver : m.sender;
+      return { _id: m._id, other };
+    });
+
+    res.status(200).json(cleaned);
+  } catch (err) {
+    res.status(500).send(`Error fetching matches: ${err.message}`);
+  }
+});
 
 
 export default requestRouter;
