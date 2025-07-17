@@ -9,7 +9,7 @@ import cors from "cors";
 
 // Middlewares
 app.use(cors({
-  origin: "http://localhost:5173", // Frontend URL
+  origin: "http://13.61.33.106", // Frontend URL
   credentials: true
 }));
 app.use(express.json());
