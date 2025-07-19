@@ -9,7 +9,7 @@ import cors from "cors";
 
 // Middlewares
 app.use(cors({
-  origin: "http://13.61.33.106", // Frontend URL
+  origin: "https://stackmatch.duckdns.org", // Frontend URL
   credentials: true
 }));
 app.use(express.json());
