@@ -14,3 +14,4 @@ connectDB()
     console.error(`Error connecting to the database Stupid: ${err.message}`);
     process.exit(1);
   });
+

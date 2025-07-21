@@ -9,7 +9,7 @@ import cors from "cors";
 
 // Middlewares
 app.use(cors({
-  origin: "https://stackmatch.duckdns.org", // Frontend URL
+  origin: ["http://localhost:5173","https://stackmatch.duckdns.org"], // Add your frontend's local URL
   credentials: true
 }));
 app.use(express.json());
@@ -27,3 +27,4 @@ app.use('/', requestRouter);
 app.use('/', feedRouter);
 
 export default app;
+
